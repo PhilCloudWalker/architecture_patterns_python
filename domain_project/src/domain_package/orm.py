@@ -18,19 +18,21 @@ order_lines = Table(
 )
 
 def create_in_memory_session():
-    con_string = 'sqlite:///:memory:'
-    engine = create_engine(con_string)
-    metadata.create_all(engine)
+    engine = create_db('sqlite:///:memory:')
     return sessionmaker(bind=engine)()
 
-def create_local_db_session():
+def create_local_session():
     file_path = f'{os.path.dirname(__file__)}/db.sqlite'
     con_string = f'sqlite:///{file_path}'
     if not os.path.exists(file_path):
-        engine = create_engine(con_string)
-        metadata.create_all(engine)
-        print(f'{con_string} created')
+        create_db(con_string)
     return sessionmaker(bind=create_engine(con_string))()
+
+def create_db(con_string):
+    engine = create_engine(con_string)
+    metadata.create_all(engine)
+    return engine
+
 
 def create_session(connection_string=None, engine=None):
     if engine:
@@ -44,8 +46,9 @@ def start_mappers():
 
 if __name__ == '__main__':
 
-    session = in_memory_session()
-    #session = local_db_session()
+    session = create_in_memory_session()
+    #session = create_local_session()
+
     start_mappers()
     
     # How to create a session
