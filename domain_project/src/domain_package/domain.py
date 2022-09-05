@@ -1,11 +1,15 @@
 from dataclasses import dataclass
 from tkinter.ttk import Style
 
-@dataclass(frozen=True)
+@dataclass(unsafe_hash=True)
 class OrderLine:
-    order_id: str
+    orderid: str
     sku: str
     qty: int
+
+class OutOfStock(Exception):
+    """Not enough stock available"""
+    pass
 
 class Batch:
 
@@ -25,7 +29,7 @@ class Batch:
     
     def deallocate(self, line):
         if line in self._allocations:
-            self.allocated_orders.remove(line.order_id)
+            self.allocated_orders.remove(line.orderid)
 
     @property
     def allocated_qty(self):
@@ -47,5 +51,21 @@ class Batch:
     
     def __hash__(self):
         return hash(self.reference_id)
+
+    def __gt__(self, other):
+        if self.eta is None:
+            return False
+        if other.eta is None:
+            return True
+        else: 
+            self.eta > other.eta
     
+def allocate(line, batches):
+    try:
+        batch = next(batch for batch in sorted(batches) if batch.can_allocate(line))
+        batch.allocate(line)
+        return batch.reference_id
+    except StopIteration:
+        raise OutOfStock(f'Not enough stock for sku {line.sku}')
+
 
