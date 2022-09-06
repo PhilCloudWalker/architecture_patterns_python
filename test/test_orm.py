@@ -6,7 +6,6 @@ from sqlalchemy.orm import clear_mappers
 
 class TestORM(unittest.TestCase):
 
-    @classmethod
     def setUp(self):
         self.session = create_in_memory_session()
         start_mappers()

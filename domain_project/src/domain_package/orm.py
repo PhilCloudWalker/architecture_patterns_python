@@ -17,15 +17,23 @@ order_lines = Table(
     Column("orderid", String(255)),
 )
 
+batches = Table(
+    "batches",
+    metadata,
+    Column("id", Integer, primary_key=True,  autoincrement=True),
+)
+
 def create_in_memory_session():
     engine = create_db('sqlite:///:memory:')
     return sessionmaker(bind=engine)()
 
 def create_local_session():
-    file_path = f'{os.path.dirname(__file__)}/db.sqlite'
+    #file_path = f'{os.path.dirname(__file__)}/db.sqlite'
+    file_path = f'alembicdb.sqlite'
     con_string = f'sqlite:///{file_path}'
     if not os.path.exists(file_path):
         create_db(con_string)
+        print('db created')
     return sessionmaker(bind=create_engine(con_string))()
 
 def create_db(con_string):
@@ -46,8 +54,8 @@ def start_mappers():
 
 if __name__ == '__main__':
 
-    session = create_in_memory_session()
-    #session = create_local_session()
+    #session = create_in_memory_session()
+    session = create_local_session()
 
     start_mappers()
     
